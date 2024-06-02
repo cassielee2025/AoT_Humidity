@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Cassie Lee">
+<meta name="dcterms.date" content="2024-06-02">
+
+<title>Array of Things Relative Humidity Interpolation and Animation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="AoT_Humidity_Final_Report_files/libs/clipboard/clipboard.min.js"></script>
+<script src="AoT_Humidity_Final_Report_files/libs/quarto-html/quarto.js"></script>
+<script src="AoT_Humidity_Final_Report_files/libs/quarto-html/popper.min.js"></script>
+<script src="AoT_Humidity_Final_Report_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="AoT_Humidity_Final_Report_files/libs/quarto-html/anchor.min.js"></script>
+<link href="AoT_Humidity_Final_Report_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="AoT_Humidity_Final_Report_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="AoT_Humidity_Final_Report_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="AoT_Humidity_Final_Report_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="AoT_Humidity_Final_Report_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="AoT_Humidity_Final_Report_files/libs/quarto-contrib/videojs/video.min.js"></script>
+<link href="AoT_Humidity_Final_Report_files/libs/quarto-contrib/videojs/video-js.css" rel="stylesheet">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#data-source" id="toc-data-source" class="nav-link" data-scroll-target="#data-source">Data Source</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul>
+  <li><a href="#data-wrangling-r" id="toc-data-wrangling-r" class="nav-link" data-scroll-target="#data-wrangling-r">Data wrangling – R</a></li>
+  <li><a href="#introduction-to-arcpy-arcpy" id="toc-introduction-to-arcpy-arcpy" class="nav-link" data-scroll-target="#introduction-to-arcpy-arcpy">Introduction to ArcPy – ArcPy</a></li>
+  <li><a href="#interpolation-methods-arcpy" id="toc-interpolation-methods-arcpy" class="nav-link" data-scroll-target="#interpolation-methods-arcpy">Interpolation methods – ArcPy</a></li>
+  <li><a href="#multidimensional-mosaic-datasets-arcpy" id="toc-multidimensional-mosaic-datasets-arcpy" class="nav-link" data-scroll-target="#multidimensional-mosaic-datasets-arcpy">Multidimensional mosaic datasets – ArcPy</a></li>
+  <li><a href="#animation-arcgis-pro-and-adobe-premiere-pro" id="toc-animation-arcgis-pro-and-adobe-premiere-pro" class="nav-link" data-scroll-target="#animation-arcgis-pro-and-adobe-premiere-pro">Animation – ArcGIS Pro and Adobe Premiere Pro</a></li>
+  </ul></li>
+  <li><a href="#final-output" id="toc-final-output" class="nav-link" data-scroll-target="#final-output">Final output</a></li>
+  <li><a href="#challenges" id="toc-challenges" class="nav-link" data-scroll-target="#challenges">Challenges</a></li>
+  <li><a href="#future-directions-and-reflection" id="toc-future-directions-and-reflection" class="nav-link" data-scroll-target="#future-directions-and-reflection">Future directions and reflection</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Array of Things Relative Humidity Interpolation and Animation</h1>
+<p class="subtitle lead">GIS Independent Study</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Cassie Lee </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 2, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Github Repo
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><a href="https://github.com/cassielee2025/AoT_Humidity.git">GitHub Repo Link</a></p>
+</div>
+</div>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p><a href="https://arrayofthings.github.io/faq.html">Array of Things</a> is a Chicago based project that collected air and environmental quality data from a series of sensors installed around Chicago. Data recorded included temperature, relative humidity, several air pollutants, noise pollution, and more. This data was collected relatively continuously while sensors were operational. This project interpolates weekly averages of relative humidity across the City of Chicago and animates the interpolations across 2019.</p>
+</section>
+<section id="data-source" class="level1">
+<h1>Data Source</h1>
+<p>The complete data is available on <a href="https://github.com/waggle-sensor/waggle/blob/master/data/README.md">GitHub</a>, along with smaller datasets containing just temperature and relative humidity measurements. Due to computational constraints, I was only able to work with one of the smaller datasets, <a href="https://www.mcs.anl.gov/research/projects/waggle/downloads/datasets/slices/AoT_Chicago.complete.humidity.tar.gz">Relative Humidity</a>.</p>
+</section>
+<section id="methods" class="level1 page-columns page-full">
+<h1>Methods</h1>
+<section id="data-wrangling-r" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="data-wrangling-r">Data wrangling – R</h2>
+<p>I prepared the Relative Humidity dataset for mapping using <code>R 4.3.3</code> and <code>R studio 2023.12.1+402</code>. The packages I used were <code>tidyverse 2.0.0</code>, <code>here 1.0.1</code>, <code>arrow 15.0.1</code>, <code>duckdb 0.10.2</code>, <code>sfarrow 0.4.1</code>, and <code>sf 1.0-16</code>.</p>
+<div class="page-columns page-full"><p>The Relative Humidity dataset was a <code>.csv</code> file that contained all humidity observations from around 2016 to 2022. Because this dataset was 4.8 GB, I used the <code>arrow</code> package<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> to convert the dataset to a parquet file. A parquet file is a compressed non-human readable file format that maintains data types and is computationally efficient <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. Parquet files can be read as <code>Arrow</code> data type objects, and operations performed on these objects are not performed until explicitly called.</p><div class="no-row-height column-margin column-container"><li id="fn1"><p><sup>1</sup>&nbsp;https://arrow.apache.org/docs/r/index.html</p></li><li id="fn2"><p><sup>2</sup>&nbsp;https://r4ds.hadley.nz/arrow#sec-parquet</p></li></div></div>
+<p>I subsetted the data to only observations recorded in 2019 and summarized the average weekly humidity value for each sensor. Certain operations could not be performed on <code>Arrow</code> type objects, such as identifying distinct observations, so I converted between <code>Arrow</code> and <code>DuckDB</code> objects for this step.</p>
+<p>At the time of my project, ArcGIS Pro 3.2 did not have the functional ability to read parquet files. To work around this problem, I used the <code>sfarrow</code> package to convert each observation to a simple point feature and partitioned the average weekly humidity values for each sensor into individual parquet files for each week of 2019. Finally, I used the <code>sf</code> package to convert each simple feature parquet file into a shapefile that could be read into ArcGIS Pro.</p>
+</section>
+<section id="introduction-to-arcpy-arcpy" class="level2">
+<h2 class="anchored" data-anchor-id="introduction-to-arcpy-arcpy">Introduction to ArcPy – ArcPy</h2>
+<p>I used ArcPy, a python library that supports spatial analysis and integration with ArcGIS to create geodatabases, interpolate the relative humidity data across the City of Chicago, and create multidimensional mosaic datasets that support time series animations. I used <code>ArcGIS Pro 3.3.0</code> and <code>arcpy 3.3</code>, <code>matplotlib 3.6.3</code>, <code>pandas 2.0.2</code>, and base packages in the ArcGIS Pro default Python environment, <code>arcgispro-py3</code>.</p>
+<p>I began by creating a geodatabase of the relative humidity shapefiles I created using R. I copied these shapefiles over into a feature dataset in this geodatabase. I also downloaded and saved a copy of a vector layer containing the boundaries of the City of Chicago.</p>
+</section>
+<section id="interpolation-methods-arcpy" class="level2">
+<h2 class="anchored" data-anchor-id="interpolation-methods-arcpy">Interpolation methods – ArcPy</h2>
+<p>I used two interpolation methods, inverse distance weighting (IDW) and empirical Bayesian kriging (EBK).</p>
+<p><a href="https://pro.arcgis.com/en/pro-app/latest/help/analysis/geostatistical-analyst/how-inverse-distance-weighted-interpolation-works.htm">IDW</a> is a spatial interpolation method that assumes that points closer to each other are more similar than points further away from each other. Weights are proportional to the inverse of distance raised to a power. The higher the power, the more rapidly the weight decreases as distance increases.</p>
+<p><a href="https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-kriging-works.htm">Kriging</a> is a spatial interpolation method similar to IDW, however, the weights are calculated based on the distribution of measured points. The prediction depends on empirical semivariograms, which describe the relationship between lag distance and the semivariance. <a href="https://pro.arcgis.com/en/pro-app/latest/help/analysis/geostatistical-analyst/what-is-empirical-bayesian-kriging-.htm">EBK</a> is an automated form of kriging that automates the selection of which semivariogram to use for interpolation. This method of interpolation is advantageous when there are small datasets.</p>
+<p>I created two new geodatabases, one for the outputs of IDW and the other for the outputs of EBK interpolation. I interpolated relative humidity across the City of Chicago for each week of 2019 and added each raster output to their respective geodatabases.</p>
+</section>
+<section id="multidimensional-mosaic-datasets-arcpy" class="level2">
+<h2 class="anchored" data-anchor-id="multidimensional-mosaic-datasets-arcpy">Multidimensional mosaic datasets – ArcPy</h2>
+<p>I created multidimensional mosaic datasets within both the IDW and EBK geodatabases to relate all rasters to each other and make the dataset time aware.</p>
+<p>I first created a <a href="https://pro.arcgis.com/en/pro-app/latest/help/data/imagery/mosaic-datasets.htm">mosaic dataset</a>, which adds rasters to a shared dataset and creates a table with raster attributes. I then added a time component to make the dataset time aware and converted the dataset to a <a href="https://pro.arcgis.com/en/pro-app/latest/help/data/imagery/an-overview-of-multidimensional-raster-data.htm">multidimensional dataset</a> to be able to animate across time.</p>
+<p>Finally, I added these mosaic datasets to new maps in the project and adjusted the symbology to display every interpolation with the same symbology.</p>
+</section>
+<section id="animation-arcgis-pro-and-adobe-premiere-pro" class="level2">
+<h2 class="anchored" data-anchor-id="animation-arcgis-pro-and-adobe-premiere-pro">Animation – ArcGIS Pro and Adobe Premiere Pro</h2>
+<p>I used ArcGIS Pro to export a 12 second animation for both IDW and EBK interpolation that animates through each week. I then put these animations together and added legends and labels using Adobe Premiere Pro.</p>
+<p>In ArcGIS Pro, I added the two maps with the raster datasets to the project. I centered the IDW raster and bookmarked the location in the <code>Map</code> tab in the <code>Navigate</code> group so that I could easily center both IDW and EBK rasters for animation.</p>
+<p>In the <code>Time</code> tab, I set the <code>Step Interval</code> in the <code>Step</code> group to 7 Days and the <code>Span</code> in the <code>Current Time</code> group to 0 Days. In the <code>Animation</code> tab, I imported keyframes using <code>Time Slider Steps</code> in the <code>Create</code> group and set the <code>Duration</code> to 12 seconds in the <code>Playback</code> group.</p>
+<p>Then, I exported both IDW and EBK animations as HD1080 videos. I also created a print layout of the legend and exported it as a Web JPEG.</p>
+<p>Finally, I stitched the animations together with labels and a legend in Adobe Premiere Pro and exported the final video.</p>
+</section>
+</section>
+<section id="final-output" class="level1">
+<h1>Final output</h1>
+<p><a href="#fig-final-video">Figure&nbsp;1</a> displays the final output of this project. Interpolating using EBK resulted in less variation in relative humidity compared to IDW interpolation.</p>
+<div id="fig-final-video" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<div class="quarto-video"><video id="video_shortcode_videojs_video1" class="video-js vjs-default-skin vjs-fluid" controls="" preload="auto" data-setup="{}" title=""><source src="AoT_Humidity_Final_Outputs/Humidity_Animation.mp4"></video></div>
+<figcaption class="figure-caption">Figure&nbsp;1: Array of Things City of Chicago Relative Humidity Animation 2019</figcaption>
+</figure>
+</div>
+</section>
+<section id="challenges" class="level1">
+<h1>Challenges</h1>
+<p>I had initially wanted to compare interpolated values of ozone between 2019 and 2020 to see if the pandemic created a noticeable decrease in ozone levels. However, because ozone was in the complete dataset, I did not have the computational ability to handle that quantity of data. However, the process of wrangling, interpolating, and animating data from these sensors using the Relative Humidity data should have been very similar to what it would have been with ozone.</p>
+<p>I also used Relative Humidity data from 2020, but ran into issues with sample size when using EBK. After switching to data from 2019, I did not have these issues anymore.</p>
+</section>
+<section id="future-directions-and-reflection" class="level1">
+<h1>Future directions and reflection</h1>
+<p>This project thus far has helped develop my data wrangling and ArcPy skills. Next steps for this project could involve exploring more methods of interpolation and different parameters for the methods. I could use traditional prediction workflows by creating a training and testing set, using cross validation, and comparing the different interpolation methods.</p>
+<p>Throughout this project, I developed skills in working the larger datasets, scripting in ArcPy, spatial interpolation methods, and animating time series. I became more comfortable with spatial thinking, planning ahead for what each geoprocessing step requires the data to contain, and reading through documentation to learn both the code and understanding the methods I used in the project. I also learned how to streamline transitions between various languages and applications for a singular project.</p>
+</section>
+
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+          // target, if specified
+          link.setAttribute("target", "_blank");
+      }
+    }
+});
+</script>
+</div> <!-- /content -->
+<script>videojs(video_shortcode_videojs_video1);</script>
+
+
+
+</body></html>

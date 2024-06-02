@@ -1,0 +1,113 @@
+---
+title: "Array of Things Relative Humidity Interpolation and Animation"
+subtitle: "GIS Independent Study"
+author: "Cassie Lee"
+date: today
+format:
+  html:
+    
+    toc: true
+    toc-depth: 4
+    code-fold: show
+    link-external-newwindow: true
+execute:
+  
+  warning: false
+from: markdown+emoji
+reference-location: margin
+citation-location: margin
+---
+
+::: {.callout-tip icon="false"}
+## Github Repo
+
+[GitHub Repo Link](https://github.com/cassielee2025/AoT_Humidity.git)
+
+:::
+
+
+# Introduction
+
+[Array of Things](https://arrayofthings.github.io/faq.html) is a Chicago based project that collected air and environmental quality data from a series of sensors installed around Chicago. Data recorded included temperature, relative humidity, several air pollutants, noise pollution, and more. This data was collected relatively continuously while sensors were operational. This project interpolates weekly averages of relative humidity across the City of Chicago and animates the interpolations across 2019.
+
+# Data Source
+
+The complete data is available on [GitHub](https://github.com/waggle-sensor/waggle/blob/master/data/README.md), along with smaller datasets containing just temperature and relative humidity measurements. Due to computational constraints, I was only able to work with one of the smaller datasets, [Relative Humidity](https://www.mcs.anl.gov/research/projects/waggle/downloads/datasets/slices/AoT_Chicago.complete.humidity.tar.gz).
+
+# Methods
+
+## Data wrangling – R
+
+I prepared the Relative Humidity dataset for mapping using `R 4.3.3` and `R studio 2023.12.1+402`. The packages I used were `tidyverse 2.0.0`, `here 1.0.1`, `arrow 15.0.1`, `duckdb 0.10.2`, `sfarrow 0.4.1`, and `sf 1.0-16`.
+
+The Relative Humidity dataset was a `.csv` file that contained all humidity observations from around 2016 to 2022. Because this dataset was 4.8 GB, I used the `arrow` package[^aot_humidity_final_report-1] to convert the dataset to a parquet file. A parquet file is a compressed non-human readable file format that maintains data types and is computationally efficient [^aot_humidity_final_report-2]. Parquet files can be read as `Arrow` data type objects, and operations performed on these objects are not performed until explicitly called.
+
+[^aot_humidity_final_report-1]: https://arrow.apache.org/docs/r/index.html
+
+[^aot_humidity_final_report-2]: https://r4ds.hadley.nz/arrow#sec-parquet
+
+I subsetted the data to only observations recorded in 2019 and summarized the average weekly humidity value for each sensor. Certain operations could not be performed on `Arrow` type objects, such as identifying distinct observations, so I converted between `Arrow` and `DuckDB` objects for this step.
+
+At the time of my project, ArcGIS Pro 3.2 did not have the functional ability to read parquet files. To work around this problem, I used the `sfarrow` package to convert each observation to a simple point feature and partitioned the average weekly humidity values for each sensor into individual parquet files for each week of 2019. Finally, I used the `sf` package to convert each simple feature parquet file into a shapefile that could be read into ArcGIS Pro.
+
+## Introduction to ArcPy – ArcPy
+
+I used ArcPy, a python library that supports spatial analysis and integration with ArcGIS to create geodatabases, interpolate the relative humidity data across the City of Chicago, and create multidimensional mosaic datasets that support time series animations. I used `ArcGIS Pro 3.3.0` and `arcpy 3.3`, `matplotlib 3.6.3`, `pandas 2.0.2`, and base packages in the ArcGIS Pro default Python environment, `arcgispro-py3`.
+
+I began by creating a geodatabase of the relative humidity shapefiles I created using R. I copied these shapefiles over into a feature dataset in this geodatabase. I also downloaded and saved a copy of a vector layer containing the boundaries of the City of Chicago.
+
+## Interpolation methods – ArcPy
+
+I used two interpolation methods, inverse distance weighting (IDW) and empirical Bayesian kriging (EBK).
+
+[IDW](https://pro.arcgis.com/en/pro-app/latest/help/analysis/geostatistical-analyst/how-inverse-distance-weighted-interpolation-works.htm) is a spatial interpolation method that assumes that points closer to each other are more similar than points further away from each other. Weights are proportional to the inverse of distance raised to a power. The higher the power, the more rapidly the weight decreases as distance increases.
+
+[Kriging](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-kriging-works.htm) is a spatial interpolation method similar to IDW, however, the weights are calculated based on the distribution of measured points. The prediction depends on empirical semivariograms, which describe the relationship between lag distance and the semivariance. [EBK](https://pro.arcgis.com/en/pro-app/latest/help/analysis/geostatistical-analyst/what-is-empirical-bayesian-kriging-.htm) is an automated form of kriging that automates the selection of which semivariogram to use for interpolation. This method of interpolation is advantageous when there are small datasets.
+
+I created two new geodatabases, one for the outputs of IDW and the other for the outputs of EBK interpolation. I interpolated relative humidity across the City of Chicago for each week of 2019 and added each raster output to their respective geodatabases.
+
+## Multidimensional mosaic datasets – ArcPy
+
+I created multidimensional mosaic datasets within both the IDW and EBK geodatabases to relate all rasters to each other and make the dataset time aware.
+
+I first created a [mosaic dataset](https://pro.arcgis.com/en/pro-app/latest/help/data/imagery/mosaic-datasets.htm), which adds rasters to a shared dataset and creates a table with raster attributes. I then added a time component to make the dataset time aware and converted the dataset to a [multidimensional dataset](https://pro.arcgis.com/en/pro-app/latest/help/data/imagery/an-overview-of-multidimensional-raster-data.htm) to be able to animate across time.
+
+Finally, I added these mosaic datasets to new maps in the project and adjusted the symbology to display every interpolation with the same symbology.
+
+## Animation – ArcGIS Pro and Adobe Premiere Pro
+
+I used ArcGIS Pro to export a 12 second animation for both IDW and EBK interpolation that animates through each week. I then put these animations together and added legends and labels using Adobe Premiere Pro.
+
+In ArcGIS Pro, I added the two maps with the raster datasets to the project. I centered the IDW raster and bookmarked the location in the `Map` tab in the `Navigate` group so that I could easily center both IDW and EBK rasters for animation.
+
+In the `Time` tab, I set the `Step Interval` in the `Step` group to 7 Days and the `Span` in the `Current Time` group to 0 Days. In the `Animation` tab, I imported keyframes using `Time Slider Steps` in the `Create` group and set the `Duration` to 12 seconds in the `Playback` group.
+
+Then, I exported both IDW and EBK animations as HD1080 videos. I also created a print layout of the legend and exported it as a Web JPEG.
+
+Finally, I stitched the animations together with labels and a legend in Adobe Premiere Pro and exported the final video.
+
+# Final output
+
+@fig-final-video displays the final output of this project. Interpolating using EBK resulted in less variation in relative humidity compared to IDW interpolation.
+
+
+::: {#fig-final-video}
+
+{{< video AoT_Humidity_Final_Outputs/Humidity_Animation.mp4 >}}
+
+Array of Things City of Chicago Relative Humidity Animation 2019
+
+:::
+
+
+# Challenges
+
+I had initially wanted to compare interpolated values of ozone between 2019 and 2020 to see if the pandemic created a noticeable decrease in ozone levels. However, because ozone was in the complete dataset, I did not have the computational ability to handle that quantity of data. However, the process of wrangling, interpolating, and animating data from these sensors using the Relative Humidity data should have been very similar to what it would have been with ozone.
+
+I also used Relative Humidity data from 2020, but ran into issues with sample size when using EBK. After switching to data from 2019, I did not have these issues anymore.
+
+# Future directions and reflection
+
+This project thus far has helped develop my data wrangling and ArcPy skills. Next steps for this project could involve exploring more methods of interpolation and different parameters for the methods. I could use traditional prediction workflows by creating a training and testing set, using cross validation, and comparing the different interpolation methods.
+
+Throughout this project, I developed skills in working the larger datasets, scripting in ArcPy, spatial interpolation methods, and animating time series. I became more comfortable with spatial thinking, planning ahead for what each geoprocessing step requires the data to contain, and reading through documentation to learn both the code and understanding the methods I used in the project. I also learned how to streamline transitions between various languages and applications for a singular project.
