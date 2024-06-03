@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Cassie Lee">
-<meta name="dcterms.date" content="2024-06-02">
+<meta name="dcterms.date" content="2024-06-03">
 
 <title>Array of Things Relative Humidity Interpolation and Animation</title>
 <style>
@@ -87,7 +87,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">June 2, 2024</p>
+      <p class="date">June 3, 2024</p>
     </div>
   </div>
   
@@ -129,15 +129,15 @@ Github Repo
 </section>
 <section id="introduction-to-arcpy-arcpy" class="level2">
 <h2 class="anchored" data-anchor-id="introduction-to-arcpy-arcpy">Introduction to ArcPy – ArcPy</h2>
-<p>I used ArcPy, a python library that supports spatial analysis and integration with ArcGIS to create geodatabases, interpolate the relative humidity data across the City of Chicago, and create multidimensional mosaic datasets that support time series animations. I used <code>ArcGIS Pro 3.3.0</code> and <code>arcpy 3.3</code>, <code>matplotlib 3.6.3</code>, <code>pandas 2.0.2</code>, and base packages in the ArcGIS Pro default Python environment, <code>arcgispro-py3</code>.</p>
+<p>I used ArcPy, a python library that supports spatial analysis and integration with ArcGIS, to create geodatabases, interpolate the relative humidity data across the City of Chicago, and create multidimensional mosaic datasets that support time series animations. I used <code>ArcGIS Pro 3.3.0</code> and <code>arcpy 3.3</code>, <code>matplotlib 3.6.3</code>, <code>pandas 2.0.2</code>, and base packages in the ArcGIS Pro default Python environment, <code>arcgispro-py3</code>.</p>
 <p>I began by creating a geodatabase of the relative humidity shapefiles I created using R. I copied these shapefiles over into a feature dataset in this geodatabase. I also downloaded and saved a copy of a vector layer containing the boundaries of the City of Chicago.</p>
 </section>
 <section id="interpolation-methods-arcpy" class="level2">
 <h2 class="anchored" data-anchor-id="interpolation-methods-arcpy">Interpolation methods – ArcPy</h2>
 <p>I used two interpolation methods, inverse distance weighting (IDW) and empirical Bayesian kriging (EBK).</p>
 <p><a href="https://pro.arcgis.com/en/pro-app/latest/help/analysis/geostatistical-analyst/how-inverse-distance-weighted-interpolation-works.htm">IDW</a> is a spatial interpolation method that assumes that points closer to each other are more similar than points further away from each other. Weights are proportional to the inverse of distance raised to a power. The higher the power, the more rapidly the weight decreases as distance increases.</p>
-<p><a href="https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-kriging-works.htm">Kriging</a> is a spatial interpolation method similar to IDW, however, the weights are calculated based on the distribution of measured points. The prediction depends on empirical semivariograms, which describe the relationship between lag distance and the semivariance. <a href="https://pro.arcgis.com/en/pro-app/latest/help/analysis/geostatistical-analyst/what-is-empirical-bayesian-kriging-.htm">EBK</a> is an automated form of kriging that automates the selection of which semivariogram to use for interpolation. This method of interpolation is advantageous when there are small datasets.</p>
-<p>I created two new geodatabases, one for the outputs of IDW and the other for the outputs of EBK interpolation. I interpolated relative humidity across the City of Chicago for each week of 2019 and added each raster output to their respective geodatabases.</p>
+<p><a href="https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-kriging-works.htm">Kriging</a> is a spatial interpolation method similar to IDW, however, the weights are calculated based on the distribution of measured points. The prediction depends on empirical semivariograms, which describe the relationship between lag distance and the semivariance. <a href="https://pro.arcgis.com/en/pro-app/latest/help/analysis/geostatistical-analyst/what-is-empirical-bayesian-kriging-.htm">EBK</a> is an automated form of kriging that automates the selection of which semivariogram to use for interpolation. This method of interpolation is advantageous with small datasets.</p>
+<p>I created two new geodatabases, one for the outputs of IDW and the other for the outputs of EBK interpolation. I set the interpolation environment to interpolate across the extent of and mask with the City of Chicago boundary. This method extrapolates humidity values in addition to interpolation. I interpolated relative humidity across the City of Chicago for each week of 2019 and added each raster output to their respective geodatabases.</p>
 </section>
 <section id="multidimensional-mosaic-datasets-arcpy" class="level2">
 <h2 class="anchored" data-anchor-id="multidimensional-mosaic-datasets-arcpy">Multidimensional mosaic datasets – ArcPy</h2>
@@ -156,22 +156,23 @@ Github Repo
 </section>
 <section id="final-output" class="level1">
 <h1>Final output</h1>
-<p><a href="#fig-final-video">Figure&nbsp;1</a> displays the final output of this project. Interpolating using EBK resulted in less variation in relative humidity compared to IDW interpolation.</p>
+<p><a href="#fig-final-video">Figure&nbsp;1</a> displays the final output of this project.</p>
 <div id="fig-final-video" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <div class="quarto-video"><video id="video_shortcode_videojs_video1" class="video-js vjs-default-skin vjs-fluid" controls="" preload="auto" data-setup="{}" title=""><source src="AoT_Humidity_Final_Outputs/Humidity_Animation.mp4"></video></div>
-<figcaption class="figure-caption">Figure&nbsp;1: Array of Things City of Chicago Relative Humidity Animation 2019</figcaption>
+<figcaption class="figure-caption">Figure&nbsp;1: Array of Things City of Chicago Relative Humidity Animation 2019.</figcaption>
 </figure>
 </div>
+<p>Interpolating using EBK resulted in less variation in relative humidity compared to IDW interpolation. This may reflect the use of semivariograms to vary the weight interpolated values rather than just distance.</p>
 </section>
 <section id="challenges" class="level1">
 <h1>Challenges</h1>
-<p>I had initially wanted to compare interpolated values of ozone between 2019 and 2020 to see if the pandemic created a noticeable decrease in ozone levels. However, because ozone was in the complete dataset, I did not have the computational ability to handle that quantity of data. However, the process of wrangling, interpolating, and animating data from these sensors using the Relative Humidity data should have been very similar to what it would have been with ozone.</p>
+<p>I had initially wanted to compare interpolated values of ozone between 2019 and 2020 to see if the pandemic created a noticeable decrease in ozone levels. However, because ozone was in the complete dataset, I did not have the computational ability to handle that quantity of data. Despite this, the process of wrangling, interpolating, and animating data from these sensors using the Relative Humidity data should have been very similar to what it would have been with ozone. Because the majority of this process has been documented through code, it should be relatively easy to adjust for ozone data.</p>
 <p>I also used Relative Humidity data from 2020, but ran into issues with sample size when using EBK. After switching to data from 2019, I did not have these issues anymore.</p>
 </section>
 <section id="future-directions-and-reflection" class="level1">
 <h1>Future directions and reflection</h1>
-<p>This project thus far has helped develop my data wrangling and ArcPy skills. Next steps for this project could involve exploring more methods of interpolation and different parameters for the methods. I could use traditional prediction workflows by creating a training and testing set, using cross validation, and comparing the different interpolation methods.</p>
+<p>This project thus far has helped develop my data wrangling and ArcPy skills. Next steps for this project could involve exploring more methods of interpolation and different parameters for the methods. The large amount of data available through the Array of Things sensors could lend itself to a traditional prediction workflow of creating a training and testing set, using cross validation, and comparing the performance of different interpolation methods.</p>
 <p>Throughout this project, I developed skills in working the larger datasets, scripting in ArcPy, spatial interpolation methods, and animating time series. I became more comfortable with spatial thinking, planning ahead for what each geoprocessing step requires the data to contain, and reading through documentation to learn both the code and understanding the methods I used in the project. I also learned how to streamline transitions between various languages and applications for a singular project.</p>
 </section>
 
