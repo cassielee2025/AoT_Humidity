@@ -3,6 +3,7 @@ title: "Array of Things Relative Humidity Interpolation and Animation"
 subtitle: "GIS Independent Study"
 author: "Cassie Lee"
 date: today
+
 format:
   html:
     
@@ -10,9 +11,11 @@ format:
     toc-depth: 4
     code-fold: show
     link-external-newwindow: true
+    embed-resources: true
+    
 execute:
-  
   warning: false
+
 from: markdown+emoji
 reference-location: margin
 citation-location: margin
@@ -90,14 +93,7 @@ Finally, I stitched the animations together with labels and a legend in Adobe Pr
 
 @fig-final-video displays the final output of this project. 
 
-
-::: {#fig-final-video}
-
-{{< video AoT_Humidity_Final_Outputs/Humidity_Animation.mp4 >}}
-
-Array of Things City of Chicago Relative Humidity Animation 2019.
-
-:::
+![Array of Things City of Chicago Relative Humidity Animation 2019.](AoT_Humidity_Final_Outputs/Humidity_Animation.mp4){#fig-final-video}
 
 Interpolating using EBK resulted in less variation in relative humidity compared to IDW interpolation. This may reflect the use of semivariograms to vary the weight interpolated values rather than just distance. 
 

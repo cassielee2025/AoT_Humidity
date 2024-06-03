@@ -7,5 +7,4 @@ This project animates the interpolation of relative humidity across the City of 
 - `AoT_Humidity_Final_Outputs/`: animation outputs
 - `Humidity_ArcProj/`: ArcPy and ArcGIS Pro interpolation and animation
 - `Humidity_R/`: data wrangling to prepare for mapping
-- `AoT_Humidity_Final_Report_files/`: relative humidity final report support files
 - `AoT_Humidity_Final_Report.*`: relative humidity final report
